@@ -17,9 +17,14 @@ Diminuir desperdício e falta de estoque em alimentos e bebidas através de prev
 - **Algoritmo de previsão** baseado em ocupação + histórico
 
 ### Frontend
-- **React** com TypeScript
-- **Dashboard interativo** para monitoramento
-- **Gráficos e análises** em tempo real
+- **React** com Vite
+- **Tailwind CSS** para estilo
+- **Recharts** para gráficos interativos
+- **Dashboard** em tempo real
+
+### DevOps
+- **Docker** & **Docker Compose** para containerização
+- **PostgreSQL 15** em container
 
 ## 📁 Estrutura do Projeto
 
@@ -35,50 +40,60 @@ Estoque/
 │   │   ├── services/        # Serviços (previsão, etc)
 │   │   ├── utils/           # Funções auxiliares
 │   │   └── server.js        # Entrada da aplicação
-│   ├── migrations/          # Migrations do banco
-│   ├── .env.example
+│   ├── .env.example         # Variáveis de ambiente
+│   ├── Dockerfile
 │   ├── package.json
 │   └── README.md
 │
 ├── frontend/
-│   ├── public/
 │   ├── src/
 │   │   ├── components/      # Componentes React
 │   │   ├── pages/          # Páginas principais
 │   │   ├── services/       # Chamadas à API
 │   │   ├── hooks/          # Custom hooks
 │   │   ├── utils/          # Funções auxiliares
-│   │   ├── styles/         # CSS/Tailwind
-│   │   └── App.tsx
+│   │   ├── styles/         # Tailwind CSS
+│   │   └── App.jsx
+│   ├── .env.example
+│   ├── Dockerfile
 │   ├── package.json
 │   └── README.md
 │
 ├── database/
-│   ├── schema.sql          # Estrutura das tabelas
-│   └── seeds.sql           # Dados iniciais
+│   ├── schema.sql          # Estrutura completa das tabelas
+│   └── seeds.sql           # Dados iniciais (opcional)
 │
 ├── docs/
-│   ├── API.md              # Documentação da API
-│   ├── DATABASE.md         # Estrutura do banco
-│   └── ALGORITHM.md        # Algoritmo de previsão
+│   ├── API.md              # 📚 Documentação da API completa
+│   ├── DATABASE.md         # 🗄️ Estrutura do banco (8 tabelas)
+│   └── ALGORITHM.md        # 🧠 Algoritmo de previsão detalhado
 │
-└── docker-compose.yml      # Ambiente completo com containers
+├── docker-compose.yml      # Orquestração de containers
+├── .gitignore
+├── CONTRIBUTING.md         # Guia de contribuição
+└── README.md              # Este arquivo
 ```
 
 ## 🚀 Quick Start
 
-### Pré-requisitos
-- Node.js 18+
-- PostgreSQL 13+
-- Git
-
-### Instalação Local
-
+### Com Docker (Recomendado)
 ```bash
 # Clonar repositório
 git clone https://github.com/katiromero2107-svg/Estoque.git
 cd Estoque
 
+# Iniciar todos os serviços
+docker-compose up
+
+# Acessar
+- Frontend: http://localhost:3000
+- Backend: http://localhost:5000
+- Database: localhost:5432
+```
+
+### Instalação Local
+
+```bash
 # Backend
 cd backend
 npm install
@@ -88,12 +103,8 @@ npm run dev
 # Frontend (em outro terminal)
 cd frontend
 npm install
-npm start
-```
-
-### Com Docker
-```bash
-docker-compose up
+cp .env.example .env
+npm run dev
 ```
 
 ## 📊 Funcionalidades Principais
@@ -103,96 +114,191 @@ docker-compose up
 - Nível de alerta para itens críticos
 - Custo total em tempo real
 - Taxa de desperdício do período
+- Gráficos de tendência
 
 ### 2. **Previsão de Consumo** 🔮
-- Algoritmo baseado em:
-  - Taxa de ocupação (300 hóspedes base)
-  - Dia da semana
-  - Sazonalidade
-  - Histórico de consumo (14 dias)
-- Sugestões automáticas de quantidade a preparar
+Algoritmo inteligente que considera:
+- Taxa de ocupação (base: 300 hóspedes)
+- Dia da semana (sexta/sábado +20%)
+- Sazonalidade (junho +10%, dezembro +30%)
+- Histórico de consumo (14-30 dias)
+- Tendência recente
+- Intervalo de confiança (±15%)
+
+**Meta**: Acurácia > 85%
 
 ### 3. **Gestão de Estoque** 📦
 - Cadastro de itens (alimentos e bebidas)
 - Controle de validade
-- Entrada e saída de estoque
-- Alertas de estoque mínimo
+- Entrada e saída de estoque com histórico
+- Alertas de estoque mínimo/máximo
+- Categorização de itens
 
 ### 4. **Registro de Consumo & Desperdício** 📝
-- Consumo real vs. previsão
+- Consumo real vs previsão
 - Identificação de desperdício
-- Categorização (OK, Vencido, Danificado, Não utilizado)
-- Histórico completo
+- Categorização (Vencido, Danificado, Não utilizado)
+- Histórico completo com rastreabilidade
+- Análise de anomalias
 
 ### 5. **Análise de Custos** 💰
 - Custo por hóspede/dia
 - Análise Pareto (itens A, B, C)
 - Identificação de desperdício por item
+- Comparativo período vs período
 - ROI de ações de melhoria
 
-### 6. **Relatórios** 📄
+### 6. **Relatórios Gerenciais** 📄
 - Acurácia de previsões
-- Comparativo período vs. período
-- Identificação de padrões
+- Padrões de consumo
+- Identificação de anomalias
 - Recomendações de ação
+- Export em CSV/PDF
 
 ## 🧠 Algoritmo de Previsão
 
 ```
-Consumo Previsto = (Ocupação Média × Percentual Histórico × Fator Dia) + Ajuste Sazonal
+Consumo Previsto = (Ocupação × % Histórico × Fator_Dia × Fator_Sazonal) + Ajuste
 
-Exemplo:
-- Ocupação: 300 hóspedes
-- % Consumo de Café: 85% (histórico)
-- Fator Sexta: 1.1 (maior consumo)
-- Consumo Previsto ≈ 300 × 0.85 × 1.1 = 280,5 unidades
+Exemplo (Sexta-feira, Junho, 300 hóspedes, Café 85%):
+300 × 0.85 × 1.15 × 1.10 × 1.05 ≈ 343 unidades ±26
 ```
 
-## 📱 Páginas Principais
+**Componentes**:
+- Ocupação base com coeficiente de escala
+- Fatores por dia da semana (1.0 a 1.2)
+- Fatores sazonais por mês (0.95 a 1.3)
+- Ajuste fino por tendência recente (±5%)
 
-- **Login** → Autenticação
-- **Dashboard** → Visão geral
-- **Inventory** → Gestão de itens
-- **Forecasting** → Previsões
-- **Consumption** → Registrar uso/desperdício
-- **Analytics** → Análise de custos
-- **Reports** → Relatórios
+Ver [docs/ALGORITHM.md](docs/ALGORITHM.md) para detalhes matemáticos.
 
-## 🔄 Fluxo de Dados
+## 📱 Páginas Principais do Frontend
 
-```
-1. Ocupação diária inserida
-   ↓
-2. Sistema prevê consumo (algoritmo)
-   ↓
-3. Alertas para itens críticos
-   ↓
-4. Equipe prepara de acordo com previsão
-   ↓
-5. Ao final do dia: registro do consumo real
-   ↓
-6. Cálculo de desperdício (Previsto - Real)
-   ↓
-7. Algoritmo aprende e refina previsões
-```
+1. **Login** → Autenticação com JWT
+2. **Dashboard** → KPIs e alertas
+3. **Inventory** → CRUD de itens
+4. **Occupancy** → Registro de hóspedes
+5. **Forecasting** → Previsões do dia
+6. **Consumption** → Registrar consumo/desperdício
+7. **Analytics** → Gráficos e análise
+8. **Reports** → Relatórios gerenciais
+
+## 🗄️ Banco de Dados
+
+8 tabelas PostgreSQL:
+- **users**: Autenticação e permissões
+- **items**: Catálogo de alimentos/bebidas
+- **stock_movements**: Histórico de entrada/saída
+- **occupancy**: Taxa de ocupação diária
+- **forecasts**: Previsões geradas
+- **consumption**: Consumo real e desperdício
+- **consumption_history**: Histórico agregado (ML)
+- **cost_analysis**: Análise de custos
+
+Ver [docs/DATABASE.md](docs/DATABASE.md) para estrutura completa.
+
+## 📡 API REST
+
+**Base URL**: `http://localhost:5000/api`
+
+Endpoints principais:
+- `POST /auth/login` - Autenticação
+- `POST /occupancy` - Registrar ocupação
+- `POST /forecast/predict` - Gerar previsão
+- `POST /consumption` - Registrar consumo
+- `GET /analytics/waste` - Análise de desperdício
+- `GET /analytics/costs/daily` - Custos diários
+
+Ver [docs/API.md](docs/API.md) para documentação completa.
 
 ## 🔐 Segurança
 
-- Autenticação JWT
-- Validação de entrada
-- Proteção contra SQL Injection
-- Rate limiting
+- ✅ Autenticação JWT com expiração (7 dias)
+- ✅ Hash de senhas com bcryptjs
+- ✅ Validação de entrada (express-validator)
+- ✅ Proteção CORS configurável
+- ✅ Helmet.js para headers HTTP
+- ✅ Rate limiting por IP
+- ✅ Proteção contra SQL Injection
 
-## 📞 Próximos Passos
+## 🧪 Testes
 
-1. ✅ Estrutura do banco de dados
-2. ✅ Setup inicial (Docker)
-3. ✅ API Backend básica
-4. ✅ Interface Frontend
-5. ✅ Algoritmo de previsão
-6. ✅ Testes e otimizações
+```bash
+# Backend
+cd backend
+npm test
+
+# Frontend
+cd frontend
+npm test
+```
+
+## 📊 KPIs de Monitoramento
+
+| KPI | Meta | Frequência |
+|-----|------|-----------|
+| Acurácia de Previsão | > 85% | Diária |
+| Taxa de Desperdício | < 8% | Semanal |
+| Ruptura de Itens | 0 | Diária |
+| Custo por Hóspede | Reduzir 5% | Mensal |
+
+## 📈 Roadmap
+
+### Phase 1 (MVP) ✅
+- [x] Estrutura do banco de dados
+- [x] Setup com Docker
+- [x] Documentação completa
+- [ ] API básica (CRUD)
+- [ ] Algoritmo de previsão
+- [ ] Dashboard frontend
+
+### Phase 2
+- [ ] Testes automatizados
+- [ ] Autenticação e permissões
+- [ ] Relatórios em PDF
+- [ ] Integração com PMS
+
+### Phase 3
+- [ ] Machine Learning (Previsão avançada)
+- [ ] Integração com fornecedores
+- [ ] App mobile
+- [ ] Análise preditiva
+
+## 🤝 Como Contribuir
+
+1. Fork do repositório
+2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
+3. Commit (`git commit -m 'Add nova-funcionalidade'`)
+4. Push (`git push origin feature/nova-funcionalidade`)
+5. Abra um Pull Request
+
+Ver [CONTRIBUTING.md](CONTRIBUTING.md) para mais detalhes.
+
+## 📞 Suporte
+
+- 📧 Email: katiromero2107@gmail.com
+- 🐛 Issues: https://github.com/katiromero2107-svg/Estoque/issues
+
+## 📝 Licença
+
+MIT License - veja LICENSE.md
 
 ---
 
-**Status**: Em desenvolvimento  
-**Última atualização**: 2 de junho de 2026
+## 📚 Documentação
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [README.md](README.md) | Visão geral do projeto |
+| [docs/API.md](docs/API.md) | Endpoints e exemplos da API |
+| [docs/DATABASE.md](docs/DATABASE.md) | Estrutura e queries do banco |
+| [docs/ALGORITHM.md](docs/ALGORITHM.md) | Matemática do algoritmo de previsão |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Guia para contribuidores |
+| [backend/README.md](backend/README.md) | Setup do backend |
+| [frontend/README.md](frontend/README.md) | Setup do frontend |
+
+---
+
+**Status**: 🚀 Pronto para desenvolvimento  
+**Última atualização**: 3 de junho de 2026  
+**Versão**: 1.0.0 (MVP)
