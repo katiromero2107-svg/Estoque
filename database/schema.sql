@@ -29,7 +29,7 @@ CREATE TABLE items (
 CREATE TABLE stock_movements (
   id SERIAL PRIMARY KEY,
   item_id INTEGER NOT NULL REFERENCES items(id),
-  movement_type VARCHAR(50) NOT NULL, -- 'entrada', 'saída'
+  movement_type VARCHAR(50) NOT NULL,
   quantity DECIMAL(10, 2) NOT NULL,
   unit_cost DECIMAL(10, 2),
   notes TEXT,
@@ -53,7 +53,7 @@ CREATE TABLE forecasts (
   item_id INTEGER NOT NULL REFERENCES items(id),
   occupancy INTEGER NOT NULL,
   predicted_quantity DECIMAL(10, 2) NOT NULL,
-  confidence DECIMAL(5, 2), -- Confiança em %
+  confidence DECIMAL(5, 2),
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -65,7 +65,7 @@ CREATE TABLE consumption (
   actual_quantity DECIMAL(10, 2) NOT NULL,
   forecast_quantity DECIMAL(10, 2),
   waste_quantity DECIMAL(10, 2) DEFAULT 0,
-  waste_reason VARCHAR(100), -- 'vencido', 'danificado', 'não utilizado'
+  waste_reason VARCHAR(100),
   notes TEXT,
   created_at TIMESTAMP DEFAULT NOW(),
   created_by INTEGER REFERENCES users(id)

@@ -41,7 +41,7 @@ Coeficiente_Escala = 1 + (0.05 × ocupação / 100)
 ### 2. **Fator Dia da Semana**
 
 | Dia | Fator | Justificativa |
-|-----|-------|--------------|
+|-----|-------|---------------|
 | Segunda | 1.05 | Volta do fim de semana, consumo normaliza |
 | Terça | 1.00 | Dia base |
 | Quarta | 0.98 | Leve redução |
@@ -52,13 +52,19 @@ Coeficiente_Escala = 1 + (0.05 × ocupação / 100)
 
 ### 3. **Fator Sazonal**
 
-```javascript
+```
 Mês       | Fator | Motivo
 Janeiro   | 1.00  | Base
 Fevereiro | 0.95  | Verão, menor ocupação
 Março     | 0.98  | Transição
 Abril     | 1.05  | Feriados/eventos
-...
+Maio      | 1.03  | Antes do inverno
+Junho     | 1.10  | Inverno, maior ocupação
+Julho     | 1.15  | Pico de férias
+Agosto    | 1.12  | Continuação de férias
+Setembro  | 1.02  | Volta ao normal
+Outubro   | 0.98  | Transição
+Novembro  | 1.05  | Pré-festas
 Dezembro  | 1.30  | Férias, máxima ocupação
 ```
 
@@ -167,27 +173,40 @@ if (confidence < 0.6) {
 }
 ```
 
-## Integração com Backend
+## Implementação Backend
 
 ```javascript
-// Exemplo de implementação
+// Exemplo pseudocódigo
 async function forecastConsumption(itemId, occupancy, date) {
+  // 1. Obter dados históricos
   const historical = await getHistoricalData(itemId, 30);
-  const weeklyTrend = calculateWeeklyTrend(historical);
-  const dayFactor = getDayFactor(date);
-  const seasonalFactor = getSeasonalFactor(date);
   
-  const baseForecast = occupancy * historical.avgConsumption;
-  const scaledForecast = baseForecast * getScaleFactor(occupancy);
-  const finalForecast = scaledForecast * dayFactor * seasonalFactor * weeklyTrend;
+  // 2. Calcular consumo base por hóspede
+  const avgConsumptionPerGuest = calculateAverage(historical);
   
-  const confidence = calculateConfidence(historical, weeklyTrend);
+  // 3. Aplicar fatores
+  const dayFactor = getDayFactor(date.getDay());
+  const seasonalFactor = getSeasonalFactor(date.getMonth());
+  const scaleFactor = getScaleFactor(occupancy);
+  
+  // 4. Calcular tendência recente
+  const recentTrend = calculateRecentTrend(historical, 7);
+  
+  // 5. Previsão final
+  const baseForecast = occupancy * avgConsumptionPerGuest;
+  const scaledForecast = baseForecast * scaleFactor;
+  const finalForecast = scaledForecast * dayFactor * seasonalFactor * recentTrend;
+  
+  // 6. Calcular confiança
+  const confidence = calculateConfidence(historical, recentTrend);
   
   return {
+    itemId,
+    date,
     predictedQuantity: Math.round(finalForecast),
     lowerBound: Math.round(finalForecast * 0.85),
     upperBound: Math.round(finalForecast * 1.15),
-    confidence: confidence,
+    confidence,
     breakdown: {
       base: baseForecast,
       scaled: scaledForecast,
@@ -202,7 +221,7 @@ async function forecastConsumption(itemId, occupancy, date) {
 ## KPIs de Monitoramento
 
 | KPI | Meta | Frequência |
-|-----|------|-----------|
+|-----|------|------------|
 | Acurácia de Previsão | > 85% | Diária |
 | Desperdício % | < 8% | Semanal |
 | Ruptura de Itens | 0 | Diária |

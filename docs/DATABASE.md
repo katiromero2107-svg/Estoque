@@ -112,7 +112,7 @@ created_at      | TIMESTAMP
 ## Índices
 
 | Índice | Tabela | Coluna | Benefício |
-|--------|--------|--------|-----------|
+|--------|--------|--------|----------|
 | idx_items_category | items | category | Filtragem rápida por categoria |
 | idx_stock_movements_item_date | stock_movements | item_id, created_at | Histórico de movimento |
 | idx_consumption_date_item | consumption | date, item_id | Consultas de consumo |
